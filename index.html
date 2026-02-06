@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Tweet Card</title>
+<title>Tweet Text Card</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 body{
@@ -35,9 +35,10 @@ button{
   box-shadow:0 12px 28px rgba(0,0,0,0.06)
 }
 .header{
-  font-weight:600
+  font-weight:600;
+  font-size:16px
 }
-.sub{
+.date{
   margin-top:4px;
   font-size:14px;
   color:#6b7280
@@ -46,11 +47,6 @@ button{
   margin-top:18px;
   font-size:18px;
   line-height:1.8
-}
-.content img{
-  width:100%;
-  border-radius:16px;
-  margin-top:16px
 }
 .footer{
   display:flex;
@@ -94,33 +90,29 @@ async function loadTweet(){
   hidden.innerHTML=data.html
 
   const block=hidden.querySelector("blockquote")
+  if(!block)return
+
   const p=block.querySelector("p")
-
-  const links=[...block.querySelectorAll("a")]
-  const timeLink=links.find(a=>a.querySelector("time"))
-  const date=timeLink?timeLink.innerText:""
-
-  const userLink=links[links.length-1]
-  const username=userLink?userLink.innerText:"@unknown"
-  const accountName=username.replace("@","")
+  if(!p)return
 
   p.querySelectorAll("a").forEach(a=>{
     if(a.innerText.startsWith("pic.twitter.com"))a.remove()
   })
 
-  const images=[...hidden.querySelectorAll("img")]
+  const timeEl=block.querySelector("time")
+  const date=timeEl?timeEl.getAttribute("datetime").slice(0,10):""
+
+  const links=[...block.querySelectorAll("a")]
+  const userLink=links.find(a=>a.innerText.startsWith("@"))
+  const username=userLink?userLink.innerText:"@unknown"
 
   const card=document.getElementById("card")
   card.innerHTML=`
-    <div class="header">${accountName} ${username}</div>
-    <div class="sub">${date}</div>
-    <div class="content"></div>
+    <div class="header">${username}</div>
+    <div class="date">${date}</div>
+    <div class="content">${p.innerHTML}</div>
     <div class="footer">💬 🔁 ❤️</div>
   `
-
-  const content=card.querySelector(".content")
-  content.innerHTML=p.innerHTML
-  images.forEach(img=>content.appendChild(img.cloneNode()))
 }
 
 function saveImage(){
