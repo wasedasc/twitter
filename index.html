@@ -2,120 +2,123 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Tweet Text Card</title>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<title>Tweet Card Generator</title>
 <style>
-body{
-  background:#f6f7f9;
-  font-family:"Inter","Noto Sans JP",system-ui,sans-serif;
-  padding:40px
+body {
+  background:#f7f8fa;
+  font-family:system-ui,sans-serif;
+  padding:24px;
 }
-.controls{
+.controls {
   display:flex;
-  gap:8px
+  gap:8px;
+  margin-bottom:16px;
 }
-input,button{
-  padding:10px 14px;
+input {
+  flex:1;
+  padding:10px 12px;
   font-size:16px;
   border-radius:8px;
-  border:1px solid #d0d7de
+  border:1px solid #ddd;
 }
-button{
-  background:#3ea8ff;
-  color:white;
+button {
+  padding:10px 14px;
+  border-radius:8px;
   border:none;
-  cursor:pointer
-}
-#card{
-  max-width:640px;
-  background:white;
-  border-radius:20px;
-  padding:28px;
-  margin-top:24px;
-  box-shadow:0 12px 28px rgba(0,0,0,0.06)
-}
-.header{
-  font-weight:600;
-  font-size:16px
-}
-.date{
-  margin-top:4px;
+  background:#3b82f6;
+  color:white;
   font-size:14px;
-  color:#6b7280
+  cursor:pointer;
 }
-.content{
-  margin-top:18px;
-  font-size:18px;
-  line-height:1.8
+.card {
+  max-width:600px;
+  background:white;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
 }
-.content a{
-  color:#4fa3d1;
-  text-decoration:none
+.header {
+  font-weight:600;
+  font-size:15px;
 }
-.content a:hover{
-  text-decoration:underline
+.date {
+  color:#6b7280;
+  font-size:13px;
+  margin-top:2px;
 }
-#hidden{
-  display:none
+.content {
+  margin-top:14px;
+  font-size:15px;
+  line-height:1.7;
+}
+.content a {
+  color:#5b8def;
+  text-decoration:none;
 }
 </style>
 </head>
 <body>
 
 <div class="controls">
-  <input id="url" placeholder="https://x.com/..." onkeydown="if(event.key==='Enter')loadTweet()">
-  <button onclick="pasteUrl()">貼り付け</button>
-  <button onclick="loadTweet()">生成</button>
-  <button onclick="saveImage()">PNG保存</button>
+  <input id="url" placeholder="https://twitter.com/...">
+  <button id="paste">Paste</button>
+  <button id="gen">生成</button>
 </div>
 
-<div id="hidden"></div>
-<div id="card"></div>
+<div id="out"></div>
 
 <script>
-async function pasteUrl(){
-  const text=await navigator.clipboard.readText()
-  document.getElementById("url").value=text
+const input = document.getElementById("url")
+const out = document.getElementById("out")
+
+document.getElementById("paste").onclick = async () => {
+  input.value = await navigator.clipboard.readText()
 }
 
-async function loadTweet(){
-  const url=document.getElementById("url").value
-  if(!url)return
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") generate()
+})
 
-  const m=url.match(/x\.com\/([^\/]+)\/status/)
-  const username=m?"@"+m[1]:"@unknown"
+document.getElementById("gen").onclick = generate
 
-  const api="https://publish.twitter.com/oembed?omit_script=1&dnt=1&url="+encodeURIComponent(url)
-  const res=await fetch(api)
-  const data=await res.json()
+async function generate() {
+  const url = input.value.trim()
+  if (!url) return
 
-  const hidden=document.getElementById("hidden")
-  hidden.innerHTML=data.html
+  const api = "https://publish.twitter.com/oembed?omit_script=1&url=" + encodeURIComponent(url)
+  const res = await fetch(api)
+  const json = await res.json()
+  const html = json.html
 
-  const block=hidden.querySelector("blockquote")
-  if(!block)return
+  const username = extractUsername(url)
+  const date = extractDate(html)
+  const content = extractContent(html)
 
-  const p=block.querySelector("p")
-  if(!p)return
-
-  const timeEl=block.querySelector("time")
-  const date=timeEl?timeEl.getAttribute("datetime").slice(0,10):""
-
-  const card=document.getElementById("card")
-  card.innerHTML=`
-    <div class="header">${username}</div>
-    <div class="date">${date}</div>
-    <div class="content">${p.innerHTML}</div>
+  out.innerHTML = `
+    <div class="card">
+      <div class="header">@${username}</div>
+      <div class="date">${date}</div>
+      <div class="content">${content}</div>
+    </div>
   `
 }
 
-function saveImage(){
-  html2canvas(document.getElementById("card"),{scale:2,backgroundColor:"#ffffff"}).then(c=>{
-    const a=document.createElement("a")
-    a.href=c.toDataURL("image/png")
-    a.download="tweet.png"
-    a.click()
-  })
+function extractUsername(url) {
+  const m = url.match(/twitter\.com\/([^\/]+)/)
+  return m ? m[1] : "unknown"
+}
+
+function extractDate(html) {
+  const m = html.match(/datetime="([^"]+)"/)
+  if (!m) return ""
+  const d = new Date(m[1])
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+}
+
+function extractContent(html) {
+  const m = html.match(/<p[^>]*>([\s\S]*?)<\/p>/)
+  if (!m) return ""
+  return m[1]
 }
 </script>
 
