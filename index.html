@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Tweet Card Generator</title>
+<title>Tweet Card</title>
 <style>
 body {
   background:#f7f8fa;
@@ -12,12 +12,13 @@ body {
 .controls {
   display:flex;
   gap:8px;
-  margin-bottom:16px;
+  margin-bottom:20px;
+  max-width:640px;
 }
 input {
   flex:1;
   padding:10px 12px;
-  font-size:16px;
+  font-size:15px;
   border-radius:8px;
   border:1px solid #ddd;
 }
@@ -26,13 +27,13 @@ button {
   border-radius:8px;
   border:none;
   background:#3b82f6;
-  color:white;
+  color:#fff;
   font-size:14px;
   cursor:pointer;
 }
 .card {
-  max-width:600px;
-  background:white;
+  max-width:640px;
+  background:#fff;
   border-radius:16px;
   padding:20px;
   box-shadow:0 8px 24px rgba(0,0,0,.08);
@@ -44,12 +45,13 @@ button {
 .date {
   color:#6b7280;
   font-size:13px;
-  margin-top:2px;
+  margin-top:4px;
 }
 .content {
-  margin-top:14px;
+  margin-top:16px;
   font-size:15px;
   line-height:1.7;
+  word-break:break-word;
 }
 .content a {
   color:#5b8def;
@@ -112,13 +114,15 @@ function extractDate(html) {
   const m = html.match(/datetime="([^"]+)"/)
   if (!m) return ""
   const d = new Date(m[1])
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+  const y = d.getFullYear()
+  const m2 = String(d.getMonth()+1).padStart(2,"0")
+  const d2 = String(d.getDate()).padStart(2,"0")
+  return `${y}-${m2}-${d2}`
 }
 
 function extractContent(html) {
   const m = html.match(/<p[^>]*>([\s\S]*?)<\/p>/)
-  if (!m) return ""
-  return m[1]
+  return m ? m[1] : ""
 }
 </script>
 
