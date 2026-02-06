@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Tweet Card</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script async src="https://platform.twitter.com/widgets.js"></script>
 <style>
 body{
   background:#f6f7f9;
@@ -21,10 +22,6 @@ button{
   color:white;
   border:none
 }
-#hidden{
-  position:absolute;
-  left:-9999px
-}
 #card{
   max-width:620px;
   background:white;
@@ -33,37 +30,11 @@ button{
   margin-top:24px;
   box-shadow:0 12px 28px rgba(0,0,0,0.06)
 }
-.header{
-  display:flex;
-  align-items:center;
-  gap:12px
+.twitter-tweet{
+  margin:0
 }
-.header img{
-  width:48px;
-  height:48px;
-  border-radius:50%
-}
-.name{
-  font-weight:600
-}
-.meta{
-  font-size:14px;
-  color:#6b7280
-}
-.date{
-  margin-left:auto;
-  font-size:13px;
-  color:#9aa0a6
-}
-.content{
-  margin-top:16px;
-  font-size:18px;
-  line-height:1.8
-}
-.content img{
-  margin-top:16px;
-  width:100%;
-  border-radius:14px
+.twitter-tweet iframe{
+  width:100% !important
 }
 .footer{
   display:flex;
@@ -80,7 +51,6 @@ button{
 <button onclick="loadTweet()">生成</button>
 <button onclick="saveImage()">PNG保存</button>
 
-<div id="hidden"></div>
 <div id="card"></div>
 
 <script>
@@ -89,45 +59,14 @@ async function loadTweet(){
   const api="https://publish.twitter.com/oembed?omit_script=1&dnt=1&url="+encodeURIComponent(url)
   const res=await fetch(api)
   const data=await res.json()
-  const hidden=document.getElementById("hidden")
-  hidden.innerHTML=data.html
-  if(!window.twttr){
-    const s=document.createElement("script")
-    s.src="https://platform.twitter.com/widgets.js"
-    document.body.appendChild(s)
-    await new Promise(r=>s.onload=r)
-  }
-  await window.twttr.widgets.load(hidden)
-  setTimeout(buildCard,300)
-}
-function buildCard(){
-  const tweet=document.querySelector("#hidden iframe").contentDocument
-  const headerImg=tweet.querySelector("img")
-  const name=tweet.querySelector("strong")
-  const id=tweet.querySelector("a")
-  const time=tweet.querySelector("time")
-  const text=tweet.querySelector("p")
-  const images=tweet.querySelectorAll("img")
   const card=document.getElementById("card")
-  card.innerHTML=`
-    <div class="header">
-      <img src="${headerImg.src}">
-      <div>
-        <div class="name">${name.innerText}</div>
-        <div class="meta">${id.innerText}</div>
-      </div>
-      <div class="date">${time.innerText}</div>
-    </div>
-    <div class="content">${text.innerHTML}</div>
-    <div class="footer">💬 🔁 ❤️</div>
-  `
-  const content=card.querySelector(".content")
-  images.forEach((img,i)=>{
-    if(i>0) content.appendChild(img.cloneNode())
-  })
+  card.innerHTML=data.html+`<div class="footer">💬 🔁 ❤️</div>`
+  if(window.twttr){
+    window.twttr.widgets.load(card)
+  }
 }
 function saveImage(){
-  html2canvas(document.getElementById("card"),{scale:2}).then(c=>{
+  html2canvas(document.getElementById("card"),{scale:2,backgroundColor:"#ffffff"}).then(c=>{
     const a=document.createElement("a")
     a.href=c.toDataURL("image/png")
     a.download="tweet.png"
