@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Tweet to Card</title>
+<title>Tweet Card</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 body{
@@ -35,32 +35,12 @@ button{
   box-shadow:0 12px 28px rgba(0,0,0,0.06)
 }
 .header{
-  display:flex;
-  align-items:center;
-  gap:14px
-}
-.avatar{
-  width:48px;
-  height:48px;
-  border-radius:50%;
-  background:#dbeafe;
-  color:#2563eb;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   font-weight:600
 }
-.name{
-  font-weight:600
-}
-.meta{
+.sub{
+  margin-top:4px;
   font-size:14px;
   color:#6b7280
-}
-.date{
-  margin-left:auto;
-  font-size:13px;
-  color:#9aa0a6
 }
 .content{
   margin-top:18px;
@@ -101,46 +81,48 @@ async function pasteUrl(){
   const text=await navigator.clipboard.readText()
   document.getElementById("url").value=text
 }
+
 async function loadTweet(){
   const url=document.getElementById("url").value
   if(!url)return
+
   const api="https://publish.twitter.com/oembed?omit_script=1&dnt=1&url="+encodeURIComponent(url)
   const res=await fetch(api)
   const data=await res.json()
+
   const hidden=document.getElementById("hidden")
   hidden.innerHTML=data.html
+
   const block=hidden.querySelector("blockquote")
   const p=block.querySelector("p")
+
   const links=[...block.querySelectorAll("a")]
   const timeLink=links.find(a=>a.querySelector("time"))
   const date=timeLink?timeLink.innerText:""
+
   const userLink=links[links.length-1]
-  const id=userLink?userLink.innerText:""
-  const name=id.replace("@","")
+  const username=userLink?userLink.innerText:"@unknown"
+  const accountName=username.replace("@","")
+
+  p.querySelectorAll("a").forEach(a=>{
+    if(a.innerText.startsWith("pic.twitter.com"))a.remove()
+  })
+
   const images=[...hidden.querySelectorAll("img")]
+
   const card=document.getElementById("card")
-  card.innerHTML=""
-  const header=document.createElement("div")
-  header.className="header"
-  header.innerHTML=`
-    <div class="avatar">${name.slice(0,1).toUpperCase()}</div>
-    <div>
-      <div class="name">${name}</div>
-      <div class="meta">${id}</div>
-    </div>
-    <div class="date">${date}</div>
+  card.innerHTML=`
+    <div class="header">${accountName} ${username}</div>
+    <div class="sub">${date}</div>
+    <div class="content"></div>
+    <div class="footer">💬 🔁 ❤️</div>
   `
-  card.appendChild(header)
-  const content=document.createElement("div")
-  content.className="content"
+
+  const content=card.querySelector(".content")
   content.innerHTML=p.innerHTML
   images.forEach(img=>content.appendChild(img.cloneNode()))
-  card.appendChild(content)
-  const footer=document.createElement("div")
-  footer.className="footer"
-  footer.innerHTML="💬 🔁 ❤️"
-  card.appendChild(footer)
 }
+
 function saveImage(){
   html2canvas(document.getElementById("card"),{scale:2,backgroundColor:"#ffffff"}).then(c=>{
     const a=document.createElement("a")
