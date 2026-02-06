@@ -2,27 +2,27 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Tweet Card</title>
+<title>Tweet Card Generator</title>
 <style>
-body {
+body{
   background:#f7f8fa;
   font-family:system-ui,sans-serif;
   padding:24px;
 }
-.controls {
+.controls{
   display:flex;
   gap:8px;
-  margin-bottom:20px;
   max-width:640px;
+  margin-bottom:20px;
 }
-input {
+input{
   flex:1;
   padding:10px 12px;
   font-size:15px;
   border-radius:8px;
   border:1px solid #ddd;
 }
-button {
+button{
   padding:10px 14px;
   border-radius:8px;
   border:none;
@@ -31,29 +31,24 @@ button {
   font-size:14px;
   cursor:pointer;
 }
-.card {
+.card{
   max-width:640px;
   background:#fff;
   border-radius:16px;
   padding:20px;
   box-shadow:0 8px 24px rgba(0,0,0,.08);
 }
-.header {
+.header{
   font-weight:600;
   font-size:15px;
 }
-.date {
-  color:#6b7280;
-  font-size:13px;
-  margin-top:4px;
-}
-.content {
+.content{
   margin-top:16px;
   font-size:15px;
   line-height:1.7;
   word-break:break-word;
 }
-.content a {
+.content a{
   color:#5b8def;
   text-decoration:none;
 }
@@ -62,7 +57,7 @@ button {
 <body>
 
 <div class="controls">
-  <input id="url" placeholder="https://twitter.com/...">
+  <input id="url" placeholder="https://twitter.com/username/status/...">
   <button id="paste">Paste</button>
   <button id="gen">生成</button>
 </div>
@@ -70,59 +65,47 @@ button {
 <div id="out"></div>
 
 <script>
-const input = document.getElementById("url")
-const out = document.getElementById("out")
+const input=document.getElementById("url")
+const out=document.getElementById("out")
 
-document.getElementById("paste").onclick = async () => {
-  input.value = await navigator.clipboard.readText()
+document.getElementById("paste").onclick=async()=>{
+  input.value=await navigator.clipboard.readText()
 }
 
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") generate()
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter")generate()
 })
 
-document.getElementById("gen").onclick = generate
+document.getElementById("gen").onclick=generate
 
-async function generate() {
-  const url = input.value.trim()
-  if (!url) return
+async function generate(){
+  const url=input.value.trim()
+  if(!url)return
 
-  const api = "https://publish.twitter.com/oembed?omit_script=1&url=" + encodeURIComponent(url)
-  const res = await fetch(api)
-  const json = await res.json()
-  const html = json.html
+  const api="https://publish.twitter.com/oembed?omit_script=1&url="+encodeURIComponent(url)
+  const res=await fetch(api)
+  const json=await res.json()
+  const html=json.html
 
-  const username = extractUsername(url)
-  const date = extractDate(html)
-  const content = extractContent(html)
+  const username=extractUsername(url)
+  const content=extractContent(html)
 
-  out.innerHTML = `
+  out.innerHTML=`
     <div class="card">
       <div class="header">@${username}</div>
-      <div class="date">${date}</div>
       <div class="content">${content}</div>
     </div>
   `
 }
 
-function extractUsername(url) {
-  const m = url.match(/twitter\.com\/([^\/]+)/)
-  return m ? m[1] : "unknown"
+function extractUsername(url){
+  const m=url.match(/twitter\.com\/([^\/]+)\/status/)
+  return m?m[1]:"unknown"
 }
 
-function extractDate(html) {
-  const m = html.match(/datetime="([^"]+)"/)
-  if (!m) return ""
-  const d = new Date(m[1])
-  const y = d.getFullYear()
-  const m2 = String(d.getMonth()+1).padStart(2,"0")
-  const d2 = String(d.getDate()).padStart(2,"0")
-  return `${y}-${m2}-${d2}`
-}
-
-function extractContent(html) {
-  const m = html.match(/<p[^>]*>([\s\S]*?)<\/p>/)
-  return m ? m[1] : ""
+function extractContent(html){
+  const m=html.match(/<p[^>]*>([\s\S]*?)<\/p>/)
+  return m?m[1]:""
 }
 </script>
 
