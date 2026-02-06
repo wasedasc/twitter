@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Tweet to Zenn Card</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+body {
+  font-family: "Inter","Noto Sans JP",system-ui,sans-serif;
+  background:#f6f7f9;
+  padding:40px;
+}
+
+input,button {
+  font-size:16px;
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid #d0d7de;
+}
+
+button {
+  background:#3ea8ff;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+#card {
+  max-width:600px;
+  margin-top:30px;
+  background:white;
+  border-radius:16px;
+  padding:28px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.06);
+}
+
+.twitter-tweet {
+  margin:0;
+}
+
+.twitter-tweet p {
+  font-size:18px;
+  line-height:1.8;
+}
+
+.twitter-tweet a {
+  color:#3ea8ff;
+  text-decoration:none;
+}
+
+.twitter-tweet time {
+  font-size:14px;
+  color:#7a7a7a;
+}
+
+.footer {
+  margin-top:24px;
+  font-size:13px;
+  color:#9aa0a6;
+  text-align:right;
+}
+</style>
+</head>
+<body>
+
+<input id="url" placeholder="https://x.com/...">
+<button onclick="loadTweet()">読み込み</button>
+<button onclick="saveImage()">PNG保存</button>
+
+<div id="card"></div>
+
+<script>
+async function loadTweet() {
+  const url = document.getElementById("url").value
+  const api = "https://publish.twitter.com/oembed?omit_script=1&dnt=1&url=" + encodeURIComponent(url)
+  const res = await fetch(api)
+  const data = await res.json()
+  const card = document.getElementById("card")
+  card.innerHTML = data.html + '<div class="footer">via X</div>'
+}
+
+function saveImage() {
+  const card = document.getElementById("card")
+  html2canvas(card,{scale:2,backgroundColor:null}).then(canvas=>{
+    const a = document.createElement("a")
+    a.href = canvas.toDataURL("image/png")
+    a.download = "tweet.png"
+    a.click()
+  })
+}
+</script>
+
+</body>
+</html>
