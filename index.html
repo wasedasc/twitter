@@ -99,7 +99,7 @@ async function generate(){
 }
 
 function extractUsername(url){
-  const m=url.match(/twitter\.com\/([^\/]+)\/status/)
+  const m=url.match(/(?:twitter|x)\.com\/([^\/]+)\/status/)
   return m?m[1]:"unknown"
 }
 
