@@ -82,6 +82,9 @@ async function loadTweet(){
   const url=document.getElementById("url").value
   if(!url)return
 
+  const m=url.match(/x\.com\/([^\/]+)\/status/)
+  const username=m?"@"+m[1]:"@unknown"
+
   const api="https://publish.twitter.com/oembed?omit_script=1&dnt=1&url="+encodeURIComponent(url)
   const res=await fetch(api)
   const data=await res.json()
@@ -101,10 +104,6 @@ async function loadTweet(){
 
   const timeEl=block.querySelector("time")
   const date=timeEl?timeEl.getAttribute("datetime").slice(0,10):""
-
-  const links=[...block.querySelectorAll("a")]
-  const userLink=links.find(a=>a.innerText.startsWith("@"))
-  const username=userLink?userLink.innerText:"@unknown"
 
   const card=document.getElementById("card")
   card.innerHTML=`
