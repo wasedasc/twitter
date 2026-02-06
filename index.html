@@ -48,12 +48,12 @@ button{
   font-size:18px;
   line-height:1.8
 }
-.footer{
-  display:flex;
-  gap:28px;
-  margin-top:22px;
-  color:#9aa0a6;
-  font-size:18px
+.content a{
+  color:#4fa3d1;
+  text-decoration:none
+}
+.content a:hover{
+  text-decoration:underline
 }
 #hidden{
   display:none
@@ -98,10 +98,6 @@ async function loadTweet(){
   const p=block.querySelector("p")
   if(!p)return
 
-  p.querySelectorAll("a").forEach(a=>{
-    if(a.innerText.startsWith("pic.twitter.com"))a.remove()
-  })
-
   const timeEl=block.querySelector("time")
   const date=timeEl?timeEl.getAttribute("datetime").slice(0,10):""
 
@@ -110,7 +106,6 @@ async function loadTweet(){
     <div class="header">${username}</div>
     <div class="date">${date}</div>
     <div class="content">${p.innerHTML}</div>
-    <div class="footer">💬 🔁 ❤️</div>
   `
 }
 
